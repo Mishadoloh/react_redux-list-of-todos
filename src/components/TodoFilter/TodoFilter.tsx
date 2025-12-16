@@ -1,41 +1,23 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { setStatus, setQuery, clearQuery } from '../../features/filter';
 import { Status } from '../../types/Status';
-import { useAppDispatch } from '../../app/hooks';
-import { filterSlice } from '../../features/filter';
-import debounce from 'lodash/debounce';
 
-type Props = {
-  setQuery: (value: string) => void;
-};
-
-export const TodoFilter: React.FC<Props> = ({ setQuery }) => {
-  const [title, setTitle] = useState('');
+export const TodoFilter: React.FC = () => {
   const dispatch = useAppDispatch();
-
-  const applyTittle = useMemo(() => debounce(setQuery, 1000), [setQuery]);
-
-  const setFilter = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    dispatch(filterSlice.actions.setFilter(event.target.value as Status));
-  };
-
-  const handleOnChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setTitle(event.target.value);
-    applyTittle(event.target.value);
-  };
-
-  const handleOnClick = () => {
-    setQuery('');
-    setTitle('');
-  };
+  const { status, query } = useAppSelector(state => state.filter);
 
   return (
-    <form
-      className="field has-addons"
-      onSubmit={event => event.preventDefault()}
-    >
+    <form className="field has-addons" onSubmit={e => e.preventDefault()}>
       <p className="control">
         <span className="select">
-          <select data-cy="statusSelect" onChange={setFilter}>
+          <select
+            data-cy="statusSelect"
+            value={status}
+            onChange={e =>
+              dispatch(setStatus(e.target.value as Status))
+            }
+          >
             <option value="all">All</option>
             <option value="active">Active</option>
             <option value="completed">Completed</option>
@@ -45,25 +27,21 @@ export const TodoFilter: React.FC<Props> = ({ setQuery }) => {
 
       <p className="control is-expanded has-icons-left has-icons-right">
         <input
-          value={title}
           data-cy="searchInput"
           type="text"
           className="input"
           placeholder="Search..."
-          onChange={handleOnChange}
+          value={query}
+          onChange={e => dispatch(setQuery(e.target.value))}
         />
-        <span className="icon is-left">
-          <i className="fas fa-magnifying-glass" />
-        </span>
 
-        {!!title.length && (
+        {!!query && (
           <span className="icon is-right" style={{ pointerEvents: 'all' }}>
-            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <button
               data-cy="clearSearchButton"
               type="button"
               className="delete"
-              onClick={handleOnClick}
+              onClick={() => dispatch(clearQuery())}
             />
           </span>
         )}

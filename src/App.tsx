@@ -9,11 +9,11 @@ import { Todo } from './types/Todo';
 
 export const App = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [query, setQuery] = useState('');
 
   const todos = useAppSelector(state => state.todos);
   const currentTodo = useAppSelector(state => state.currentTodo);
-  const filter = useAppSelector(state => state.filter);
+  const { status, query } = useAppSelector(state => state.filter);
+
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -24,25 +24,24 @@ export const App = () => {
   }, [dispatch]);
 
   const preparedTodos = useMemo(() => {
-    let sortedTodos = [];
+    let result = todos;
 
-    switch (filter) {
-      case 'active':
-        sortedTodos = todos.filter(todo => !todo.completed);
-        break;
-
-      case 'completed':
-        sortedTodos = todos.filter(todo => todo.completed);
-        break;
-
-      default:
-        sortedTodos = todos;
+    if (status === 'active') {
+      result = result.filter(todo => !todo.completed);
     }
 
-    return sortedTodos.filter(todo =>
-      todo.title.toLowerCase().includes(query.toLowerCase().trim()),
-    );
-  }, [filter, query, todos]);
+    if (status === 'completed') {
+      result = result.filter(todo => todo.completed);
+    }
+
+    if (query) {
+      result = result.filter(todo =>
+        todo.title.toLowerCase().includes(query),
+      );
+    }
+
+    return result;
+  }, [todos, status, query]);
 
   return (
     <>
@@ -52,7 +51,7 @@ export const App = () => {
             <h1 className="title">Todos:</h1>
 
             <div className="block">
-              <TodoFilter setQuery={setQuery} />
+              <TodoFilter />
             </div>
 
             <div className="block">
@@ -62,6 +61,7 @@ export const App = () => {
           </div>
         </div>
       </div>
+
       {currentTodo && <TodoModal />}
     </>
   );
