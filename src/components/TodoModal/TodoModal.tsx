@@ -5,29 +5,31 @@ import { getUser } from '../../api';
 import { User } from '../../types/User';
 import { currentTodoSlice } from '../../features/currentTodo';
 
-export const TodoModal: React.FC = ({}) => {
+export const TodoModal: React.FC = () => {
   const currentTodo = useAppSelector(state => state.currentTodo);
   const dispatch = useAppDispatch();
+
+  // Guard: якщо currentTodo null, нічого не рендеримо
+  if (!currentTodo) return null;
+
   const { userId, id, title, completed } = currentTodo;
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
 
   const close = () => {
-    dispatch(currentTodoSlice.actions.removeCurrentTodo(''));
+    dispatch(currentTodoSlice.actions.removeCurrentTodo());
   };
 
   useEffect(() => {
     setIsLoading(true);
     getUser(userId)
       .then(response => setUser(response))
-      .finally(() => {
-        setIsLoading(false);
-      });
+      .finally(() => setIsLoading(false));
   }, [userId]);
 
   return (
     <div className="modal is-active" data-cy="modal">
-      <div className="modal-background" />
+      <div className="modal-background" onClick={close} />
 
       {isLoading ? (
         <Loader />
@@ -41,7 +43,6 @@ export const TodoModal: React.FC = ({}) => {
               Todo #{id}
             </div>
 
-            {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
             <button
               type="button"
               className="delete"
@@ -62,7 +63,11 @@ export const TodoModal: React.FC = ({}) => {
                 <strong className="has-text-danger">Planned</strong>
               )}
               {' by '}
-              <a href={user?.email}>{user?.name}</a>
+              {user ? (
+                <a href={`mailto:${user.email}`}>{user.name}</a>
+              ) : (
+                'Loading...'
+              )}
             </p>
           </div>
         </div>

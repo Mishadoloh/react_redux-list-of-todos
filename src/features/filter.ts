@@ -1,4 +1,4 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Status } from '../types/Status';
 
 export type FilterState = {
@@ -16,13 +16,14 @@ export const filterSlice = createSlice({
   initialState,
   reducers: {
     setStatus(state, action: PayloadAction<Status>) {
-      state.status = action.payload;
+      // Лінтер не дозволяє мутувати, тому повертаємо новий обʼєкт
+      return { ...state, status: action.payload };
     },
     setQuery(state, action: PayloadAction<string>) {
-      state.query = action.payload.toLowerCase();
+      return { ...state, query: action.payload.toLowerCase() };
     },
     clearQuery(state) {
-      state.query = '';
+      return { ...state, query: '' };
     },
   },
 });

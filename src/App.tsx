@@ -35,9 +35,7 @@ export const App = () => {
     }
 
     if (query) {
-      result = result.filter(todo =>
-        todo.title.toLowerCase().includes(query),
-      );
+      result = result.filter(todo => todo.title.toLowerCase().includes(query));
     }
 
     return result;
